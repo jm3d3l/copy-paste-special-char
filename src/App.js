@@ -2,60 +2,56 @@ import React, { useState, useRef } from "react";
 import "./styles.css";
 
 export default function App() {
-  const [newRef, handleOnPaste] = IsCharHook();
-  const [onChangeInput] = useInputNumberHook();
+  const numRef = useRef();
+  const [hasChar, handleOnPaste] = IsCharHook(numRef);
+  const [onChangeInput] = useInputNumberHook(numRef, hasChar);
   return (
     <div className="App">
       <h1>Hello CodeSandbox</h1>
       <input
         name="input"
         onPaste={handleOnPaste}
-        refs={newRef}
+        ref={numRef}
         onChange={onChangeInput}
       />
     </div>
   );
 }
 
-const useInputNumberHook = () => {
-  const numRef = useRef();
-  // useEffect(() => {
-  //   setNum(specialValue);
-  // }, [specialValue]);
-  // console.log(hasChar);
+const useInputNumberHook = (forwardRef, hasChar) => {
   const onChangeInput = ({ target: { name, value } }) => {
-    console.log("onchange", value);
-    // @#$@#$@#$
-    // daksdk23123!@!##!@#
-    // sdffl234234
-    // @#$@$$!@#@#!#1231313
-    // if (!hasChar) {
-    //   let str = "";
-    //   let regex = /[^a-zA-Z0-9 ]/g;
-
-    //   str = value.replace(regex, "");
-    //   numRef.current = str;
-    // }
+    if (!hasChar) {
+      let str = "";
+      let regex = /[^a-zA-Z0-9 ]/g;
+      str = value.replace(regex, "");
+      console.log("str onchange", str);
+      forwardRef.current.value = str;
+    }
   };
 
   return [onChangeInput];
 };
 
 const IsCharHook = () => {
-  const numRef = useRef();
   const [hasChar, setHasChar] = useState(false);
   let letterNumber = /\w+/;
-  const handleOnPaste = ({ clipboardData }) => {
+  const handleOnPaste = e => {
+    const { clipboardData } = e;
     let newVal = clipboardData.getData("Text");
-    console.log("onPaste", newVal);
-    // if (newVal.match(letterNumber) instanceof Array) {
-    //   setHasChar(false);
-    //   numRef.current = value;
-    // } else {
-    //   setHasChar(true);
-    //   numRef.current = newVal;
-    // }
+    if (newVal.match(letterNumber) instanceof Array) {
+      setHasChar(false);
+      return true;
+    } else {
+      setHasChar(true);
+      e.preventDefault();
+      return false;
+    }
   };
 
   return [hasChar, handleOnPaste];
 };
+
+// @#$@#$@#$
+// daksdk23123!@!##!@#
+// sdffl234234
+// @#$@$$!@#@#!#1231313
