@@ -1,48 +1,57 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "./styles.css";
 
 export default function App() {
-  const [str, onChangeInput] = useInputNumberHook();
+  const numRef = useRef();
+  const [hasChar, handleOnPaste] = IsCharHook(numRef);
+  const [onChangeInput] = useInputNumberHook(numRef, hasChar);
   return (
     <div className="App">
       <h1>Hello CodeSandbox</h1>
-      <input value={str} name="input" onChange={onChangeInput} />
+      <input
+        name="input"
+        onPaste={handleOnPaste}
+        ref={numRef}
+        onChange={onChangeInput}
+      />
     </div>
   );
 }
 
-const useInputNumberHook = (onChange = null, specialValue) => {
-  const numRef = React.useRef("");
-  const [str, setNum] = React.useState("");
-  React.useEffect(() => {
-    setNum(specialValue);
-  }, [specialValue]);
-
+const useInputNumberHook = (forwardRef, hasChar) => {
   const onChangeInput = ({ target: { name, value } }) => {
-    // @#$@#$@#$
-    // daksdk23123!@!##!@#
-    // sdffl234234
-    // @#$@$$!@#@#!#1231313
-    let str = "";
-    let regex = /[^a-zA-Z0-9 ]/g;
-    let letterNumber = /\w+/;
-    if (value.match(letterNumber) instanceof Array) {
-      console.log(
-        "instance of ara",
-        value.match(letterNumber) instanceof Array
-      );
+    if (!hasChar) {
+      let str = "";
+      let regex = /[^a-zA-Z0-9 ]/g;
       str = value.replace(regex, "");
-      setNum(str);
-    } else {
-      setNum(state => state);
+      console.log("str onchange", str);
+      forwardRef.current.value = str;
     }
-    let e = {
-      target: {}
-    };
-
-    e.target.name = name;
-    e.target.value = str;
-    // onChange(e)
   };
-  return [str, onChangeInput];
+
+  return [onChangeInput];
 };
+
+const IsCharHook = () => {
+  const [hasChar, setHasChar] = useState(false);
+  let letterNumber = /\w+/;
+  const handleOnPaste = e => {
+    const { clipboardData } = e;
+    let newVal = clipboardData.getData("Text");
+    if (newVal.match(letterNumber) instanceof Array) {
+      setHasChar(false);
+      return true;
+    } else {
+      setHasChar(true);
+      e.preventDefault();
+      return false;
+    }
+  };
+
+  return [hasChar, handleOnPaste];
+};
+
+// @#$@#$@#$
+// daksdk23123!@!##!@#
+// sdffl234234
+// @#$@$$!@#@#!#1231313
